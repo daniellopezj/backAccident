@@ -5,7 +5,6 @@ const path = require('path');
 const PrecioGasolina = path.join(__dirname, '../data/final.csv');
 const csv = require('csvtojson')
 
-// ************ INSERTAR DATOS EN MONGO DB//
 exports.connectDB = function() {
     csv()
         .fromFile(PrecioGasolina)
@@ -35,23 +34,23 @@ exports.dayWeek = function(req, res) {
     })
 }
 
-exports.ofensive = function(req, res) {
+exports.numVechicle = function(req, res) {
     gettodb([{
-            $group: { _id: "$OFFENSE_TYPE_ID", total: { $sum: 1 } }
+            $group: { _id: "$numCars", total: { $sum: 1 } }
         },
         {
             $sort: { total: -1 }
         }, {
-            $limit: 20
+            $limit: 10
         }
     ], (documentos) => {
         res.send(documentos);
     })
 }
 
-exports.district = function(req, res) {
+exports.PoliceReport = function(req, res) {
     gettodb([{
-            $group: { _id: "$DISTRICT_ID", total: { $sum: 1 } }
+            $group: { _id: "$Police_Report", total: { $sum: 1 } }
         },
         {
             $sort: { total: -1 }
@@ -61,9 +60,9 @@ exports.district = function(req, res) {
     })
 }
 
-exports.year = function(req, res) {
+exports.month = function(req, res) {
     gettodb([{
-            $group: { _id: { $year: { $convert: { input: "$REPORTED_DATE", to: "date" } } }, total: { $sum: 1 } }
+            $group: { _id: { $month: { $convert: { input: "$Date_ocurre", to: "date" } } }, total: { $sum: 1 } }
         },
         {
             $sort: { _id: 1 }
@@ -73,42 +72,32 @@ exports.year = function(req, res) {
     })
 }
 
+exports.countyName = function(req, res) {
+    gettodb([{
+            $group: { _id: "$County_Name", total: { $sum: 1 } }
+        },
+        {
+            $sort: { total: -1 }
+        },
+        {
+            $limit: 10
+        }
+    ], (documentos) => {
+        res.send(documentos);
+    })
+}
+
 function gettodb(query, callback) {
     mongoClient.connect(url, function(err, db) { //here db is the client obj
         if (err) throw err;
-        var dbase = db.db("crimenes"); //here
+        var dbase = db.db("accidentes"); //here
         findDateDb(query, dbase, callback)
     });
 }
 
 const findDateDb = async function(query, db, callback) {
-    const collection = db.collection('crimen');
+    const collection = db.collection('accidente');
     collection.aggregate(query).toArray(function(err, docs) {
         callback(docs)
-    });
-}
-
-exports.crimeOrtrafic = function(req, res) {
-    getcrimeOrtrafic((documentos) => {
-        res.send(documentos);
-    })
-}
-
-
-function getcrimeOrtrafic(callback) {
-    mongoClient.connect(url, function(err, db) { //here db is the client obj
-        if (err) throw err;
-        var dbase = db.db("crimenes"); //here
-        findDatacrimeOrtrafic(dbase, callback)
-    });
-}
-
-const findDatacrimeOrtrafic = function(db, callback) {
-    const collection = db.collection('crimen');
-    collection.find({ "IS_TRAFFIC": "1" }).count(function(e, count) {
-        var IS_TRAFFIC = count;
-        collection.find({ "IS_CRIME": "1" }).count(function(e, count) {
-            callback([{ "IS_TRAFFIC": IS_TRAFFIC, "IS_CRIME": count }])
-        });
     });
 }

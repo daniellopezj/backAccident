@@ -4,11 +4,11 @@ var db = require('../persistence/db');
 exports.assignRoutes = function(app) {
     app.use(body_parser.urlencoded({ extended: true }));
     //Insertar datos
-    // db.connectDB();
+    //db.connectDB();
 
     app.get('/dayWeek', db.dayWeek);
-    app.get('/ofensive', db.ofensive);
-    app.get('/crimeOrTrafic', db.crimeOrtrafic);
-    app.get('/district', db.district);
-    app.get('/year', db.year);
+    app.get('/numVechicle', db.numVechicle);
+    app.get('/countyName', db.countyName);
+    app.get('/PoliceReport', db.PoliceReport);
+    app.get('/month', db.month);
 }
